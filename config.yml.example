@@ -1,0 +1,7 @@
+reddit:
+  client-id: redacted
+  client-secret: redacted
+  refresh-token: redacted
+  root: 'https://www.reddit.com'
+defaults:
+  dateformat: '%a %Y-%m-%d at %H:%M'
