@@ -16,7 +16,7 @@ For more information on RedditArchiver itself, see [the main repository](https:/
 Install dependencies:
 
 ```bash
-python3 -m pip install -r dependencies
+python3 -m pip install -r requirements.txt
 ```
 
 Edit the file `config.yml` to put all the informations needed to connect (client ID, client secret and refresh token).
