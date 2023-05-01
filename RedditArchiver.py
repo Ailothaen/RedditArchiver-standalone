@@ -7,7 +7,7 @@ import praw, prawcore, markdown2, yaml, colored
 import datetime, os, sys, argparse, re
 
 __NAME__ = "RedditArchiver-standalone"
-__VERSION__ = "1.0.0"
+__VERSION__ = "1.1.0"
 
 
 
@@ -22,6 +22,9 @@ parser.add_argument('-u', '--url', help='The URL of the submission to fetch.', m
 parser.add_argument('-o', '--output', help='Output directory (default: current directory)', metavar='path', default="./")
 parser.add_argument('-q', '--quiet', help='Will not generate any message (except for errors)', action='store_true')
 parser.add_argument('-c', '--config', help='Uses a different config file (default: ./config.yml).', metavar='path', default="./config.yml")
+
+# Advanced arguments (normally hidden)
+parser.add_argument('--disable-recursion-limit', help=argparse.SUPPRESS, action='store_true')
 args = parser.parse_args()
 
 
@@ -301,7 +304,19 @@ try:
     myprint(f"[+] Submission downloaded.", 14)
 
     # Generating HTML structure
-    html = generate_html(submission, submission_id, now_str, None, comments_index, comments_forest)
+    while True: # allows to retry
+        try:
+            html = generate_html(submission, submission_id, now_str, None, comments_index, comments_forest)
+        except RecursionError:
+            if args.disable_recursion_limit:
+                sys.setrecursionlimit(sys.getrecursionlimit()*2)
+            else:
+                myprint(f"[X] The HTML structure could not be generated because the structure of the replies is going too deep for the program to handle.", 9, True)
+                myprint(f"[X] If you really want to save that thread, pass the --disable-recursion-limit option. Please note however that this might lead to crashing the program.", 9, True)
+                raise SystemExit(1)
+        else:
+            break
+
     myprint(f"[+] Submission structured.", 14)
 
     # Saving to disk
