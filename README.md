@@ -23,7 +23,7 @@ Edit the file `config.yml` to put all the informations needed to connect (client
 
 If you have no clue about what these options are, follow these steps:
 1. [Go here](https://www.reddit.com/prefs/apps) and create an app
-2. Use the "script" type, and put `localhost:8080` as redirect URI (the other options do not matter)
+2. Use the "script" type, and put `http://localhost:8080` as redirect URI (the other options do not matter)
 3. Take note of your client ID and client secret
 4. To get your refresh token, you can use [this script](https://praw.readthedocs.io/en/stable/tutorials/refresh_token.html#obtaining-refresh-tokens) (you only need the "read" scope)
 5. Edit the config file to put these three elements in it.
