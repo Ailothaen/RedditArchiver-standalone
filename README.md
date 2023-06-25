@@ -9,7 +9,7 @@ RedditArchiver-standalone is the standalone version of RedditArchiver.
 For more information on RedditArchiver itself, see [the main repository](https://github.com/ailothaen/RedditArchiver).
 
 
-## Running the script
+## Installing dependencies and setting up tokens
 
 (Replace `python3` by `py -3` if you are on Windows)
 
@@ -25,10 +25,45 @@ If you have no clue about what these options are, follow these steps:
 1. [Go here](https://www.reddit.com/prefs/apps) and create an app
 2. Use the "script" type, and put `http://localhost:8080` as redirect URI (the other options do not matter)
 3. Take note of your client ID and client secret
-4. To get your refresh token, you can use [this script](https://praw.readthedocs.io/en/stable/tutorials/refresh_token.html#obtaining-refresh-tokens) (you only need the "read" scope)
-5. Edit the config file to put these three elements in it.
+4. Run the script `authentication.py` to get your refresh token
+5. Edit the config file to put the client ID, client secret and refresh token in it.
 
-For information about the usage of the script, run `python3 RedditArchiver -h`.
+
+## Running the script
+
+You can select the submissions you want to download with several methods:
+
+- `-i`: specify a submission ID or an URL to download it. `-i` can be written several times to download several submissions, like that:
+
+```bash
+python3 RedditArchiver.py \
+    -i https://www.reddit.com/r/Superbowl/comments/14hczkk/elf_owl_enjoying_our_pond/ \
+    -i https://www.reddit.com/r/Superbowl/comments/14gozc4/adult_and_hungry_juvenile_great_horned_owl_norcal/ \
+    -i 14iard6
+```
+
+- `-s`: Download all the submissions you saved. If you want to include as well the submissions which you saved a comment from, pass `-S` instead.
+
+- `-u`: Download all the submissions you upvoted.
+
+- `-a`: Download all the submissions you posted. If you want to include as well the submissions which you posted a comment in, pass `-A` instead.  
+  You can also specify a name to download the submissions from another redditor. Here, you will download the submissions posted by you and by u/iamthatis:
+
+```bash
+python3 RedditArchiver.py -a -a iamthatis
+```
+
+You can combine these options to download a lot of things at once:
+
+```bash
+python3 RedditArchiver.py \
+    -i https://www.reddit.com/r/Superbowl/comments/14hczkk/elf_owl_enjoying_our_pond/ \
+    -i https://www.reddit.com/r/Superbowl/comments/14gozc4/adult_and_hungry_juvenile_great_horned_owl_norcal/ \
+    -i 14iard6 \
+    -s -u -A -l 10
+```
+
+RedditArchiver has more options to control its behavior (limit of submissions retrieved, config file...). To see more, display help with the `-h` option.
 
 
 ## Licensing
