@@ -2,8 +2,8 @@
 
 PyYAML >= 6.0
 anytree >= 2.8.0
-# cf. https://gitlab.com/dslackw/colored/-/issues/28
-colored >=1.4.4, !=2.0.*, !=2.1.0
+# cf. https://gitlab.com/dslackw/colored/-/issues/28 and https://gitlab.com/dslackw/colored/-/issues/29
+colored >=1.4.4, !=2.0.*, !=2.1.0, !=2.2.*
 markdown2 >= 2.4.6
 praw >= 7.6.1
 prawcore >= 2.3.0
