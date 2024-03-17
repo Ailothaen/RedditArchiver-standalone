@@ -25,7 +25,7 @@ parser_g1.add_argument('-A', '--author-extended', help='same as -a, but also sav
 parser_g1.add_argument('-u', '--upvoted', help='submissions that you upvoted', action="store_true")
 
 parser_g2 = parser.add_argument_group(title='Various', description="Other options controlling various things such as configuration, output directory...")
-parser_g2.add_argument('-l', '--limit', help='Limits the number of submissions retrieved with -s/-S, -a/-A and -u (newest first). Please note that the maximum is 1000 and Reddit will refuse to give anything past this limit.', metavar="N", type=int)
+parser_g2.add_argument('-l', '--limit', help='Limits the number of submissions retrieved with -s/-S, -a/-A and -u (newest first). Please note that the maximum is 1000 and Reddit will refuse to give anything past this limit.', metavar="N", type=int, default=1000)
 parser_g2.add_argument('-c', '--config', help='Uses a different config file (default: ./config.yml).', metavar='path', default="./config.yml")
 parser_g2.add_argument('-o', '--output', help='Output directory (default: current directory)', metavar='path', default="./")
 parser_g2.add_argument('-q', '--quiet', help='Will not generate any message (except for errors)', action='store_true')
