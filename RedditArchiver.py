@@ -7,7 +7,7 @@ import praw, prawcore, markdown2, yaml, colored
 import datetime, os, sys, argparse, re
 
 __NAME__ = "RedditArchiver-standalone"
-__VERSION__ = "2.0.0"
+__VERSION__ = "2.0.2"
 
 
 # -------------------------- #
@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser(description="Standalone version of RedditArchiv
 
 parser_g1 = parser.add_argument_group(title='Selection', description="Use at least one of these options to select what you want to save. Arguments can be used several times to specify more than one ID, URL or author.")
 parser_g1.add_argument('-i', '--id', help='ID or URL of a submission', metavar='ID/URL', action='append')
+parser_g1.add_argument('-I', '--file', help='same as -i, but reads IDs or URLs from a file', metavar='file', action='append')
 parser_g1.add_argument('-s', '--saved', help='your saved submissions', action="store_true")
 parser_g1.add_argument('-S', '--saved-extended', help='same as -s, but also saves the submissions that you saved a comment from', action="store_true")
 parser_g1.add_argument('-a', '--author', help='submissions posted from someone (by default: yourself)', metavar="name", nargs='?', action='append')
@@ -25,10 +26,10 @@ parser_g1.add_argument('-A', '--author-extended', help='same as -a, but also sav
 parser_g1.add_argument('-u', '--upvoted', help='submissions that you upvoted', action="store_true")
 
 parser_g2 = parser.add_argument_group(title='Various', description="Other options controlling various things such as configuration, output directory...")
-parser_g2.add_argument('-l', '--limit', help='Limits the number of submissions retrieved with -s/-S, -a/-A and -u (newest first). Please note that the maximum is 1000 and Reddit will refuse to give anything past this limit.', metavar="N", type=int, default=1000)
-parser_g2.add_argument('-c', '--config', help='Uses a different config file (default: ./config.yml).', metavar='path', default="./config.yml")
-parser_g2.add_argument('-o', '--output', help='Output directory (default: current directory)', metavar='path', default="./")
-parser_g2.add_argument('-q', '--quiet', help='Will not generate any message (except for errors)', action='store_true')
+parser_g2.add_argument('-l', '--limit', help='limits the number of submissions retrieved with -s/-S, -a/-A and -u (newest first). Please note that the maximum is 1000 and Reddit will refuse to give anything past this limit.', metavar="N", type=int, default=1000)
+parser_g2.add_argument('-c', '--config', help='uses a different config file (default: ./config.yml).', metavar='path', default="./config.yml")
+parser_g2.add_argument('-o', '--output', help='output directory (default: current directory)', metavar='path', default="./")
+parser_g2.add_argument('-q', '--quiet', help='will not generate any message (except for errors)', action='store_true')
 parser_g2.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
 # Advanced arguments (normally hidden)
@@ -45,8 +46,8 @@ def extract_id(url):
     Extracts the submission ID from a supplied URL
     """
     regexes = (r"^([a-z0-9]+)/?$",
-    r"^https?:\/\/(?:old|www)?\.reddit\.com\/([a-z0-9]+)\/?$",
-    r"^https?:\/\/(?:old|www)?\.reddit\.com\/r\/[a-zA-Z0-9\-_]+\/comments\/([a-z0-9]+)\/?")
+    r"^https?:\/\/(?:old|new|www)?\.reddit\.com\/([a-z0-9]+)\/?$",
+    r"^https?:\/\/(?:old|new|www)?\.reddit\.com\/r\/[a-zA-Z0-9\-_]+\/comments\/([a-z0-9]+)\/?")
 
     for regex in regexes:
         result = re.search(regex, url)
@@ -341,6 +342,19 @@ try:
                 raise SystemExit(1)
             else:
                 submission_id_list.append(submission_id)
+    
+    if args.file:
+        for filename in args.file:
+            with open(filename, "r") as f:
+                urls_in_file = f.read().splitlines()
+
+            for url in urls_in_file:
+                submission_id = extract_id(url)
+                if submission_id is None:
+                    myprint(f'[x] The URL or ID "{url}" in "{filename}" looks incorrect. Please check it.', 9, True)
+                    raise SystemExit(1)
+                else:
+                    submission_id_list.append(submission_id)
 
     if args.saved or args.saved_extended:
         try:
