@@ -8,6 +8,13 @@ RedditArchiver-standalone is the standalone version of RedditArchiver.
 
 For more information on RedditArchiver itself, see [the main repository](https://github.com/ailothaen/RedditArchiver).
 
+> [!WARNING]
+> In November 2025, Reddit decided to require all new API token creations to be approved by Reddit admins. Since this change was primarily made to deter scrapers and LLMs from using Reddit data, it is very unlikely you will get a token approved if you tell "I want to use a software to archive Reddit posts" as a justification.
+>
+> In practice, this means that Reddit API is now gone and that this project is no longer usable if you did not have an API token registered before. This is another move towards the enshittification of this platform (that already began in 2023 when hard limits were imposed on the APIs). If you are lucky enough to have an API token already registered, **DO NOT DELETE IT**. 
+>
+> It may be still possible to save posts and comments using the API unauthenticated endpoints, but this project is not doing that. I suggest looking into other projects if you are in this case.
+
 
 ## Installing dependencies and setting up tokens
 
@@ -21,6 +28,10 @@ python3 -m pip install -r requirements.txt
 
 Copy `config.yml.example` to `config.yml` and put all the information needed to connect (client ID, client secret and refresh token). If you have no clue about what these options are, follow these steps:
 1. [Go here](https://www.reddit.com/prefs/apps) and create an app. Use the "script" type, and put `http://localhost:8080` as redirect URI (the other options do not matter).
+
+> [!WARNING]
+> If you have a message telling "In order to create an application or use our API you can read our full policies here...", you are likely out of luck (read the warning message at the beginning of this README)
+
 2. Finish creating the app. Take note of your client ID and client secret (the client ID is below the 'personal use script' label, the secret is beside the 'secret' label).
 3. Run the script `authentication.py` to get your refresh token.
 4. Edit the config file to put the client ID, client secret and refresh token in it. (You can avoid putting the refresh token in the config file; see [Shell Function](#shell-function) for details.)
