@@ -5,6 +5,7 @@ import praw, prawcore, markdown2, yaml, colored
 
 # stdlib
 import datetime, os, sys, argparse, re
+from urllib.parse import urlparse
 
 __NAME__ = "RedditArchiver-standalone"
 __VERSION__ = "2.0.2"
@@ -90,7 +91,7 @@ def get_upvoted_submissions(limit=1000):
         # Reddit seemingly does not give upvoted comments
         if item.name[0:2] == "t3":
             submission_ids.append(item.id)
-    
+
     return submission_ids
 
 
@@ -104,7 +105,7 @@ def get_posted_submissions(author=None, extended=False, limit=1000):
         user = reddit.user.me()
     else:
         user = reddit.redditor(author)
-    
+
     if extended:
         for item in user.submissions.new(limit=limit*2):
             submission_ids.append([item.id, item.created_utc])
@@ -117,7 +118,7 @@ def get_posted_submissions(author=None, extended=False, limit=1000):
     else:
         for item in user.submissions.new(limit=limit):
             submission_ids.append(item.id)
-    
+
     return submission_ids
 
 
@@ -135,7 +136,7 @@ def comment_parser(initial_text):
     # converting linebreaks to HTML
     text = text.replace('\n\n', '</p><p>')
     text = text.replace('\n', '<br>')
-    
+
     # removing the last <br> that is here for a weird reason
     if text[-4:] == '<br>':
         text = text[:-4]
@@ -145,7 +146,7 @@ def comment_parser(initial_text):
 
 def get_submission(reddit, submission_id):
     """
-    Retrieves submission object 
+    Retrieves submission object
     """
     submission = reddit.submission(id=submission_id)
     nb_replies = submission.num_comments
@@ -170,7 +171,7 @@ def download_submission(submission, submission_id):
     submission.comments.replace_more(limit=None)
 
     # Filling index and forest
-    comment_queue = submission.comments[:] 
+    comment_queue = submission.comments[:]
     while comment_queue:
         comment = comment_queue.pop(0)
         comments_index['t1_'+comment.id] = Node('t1_'+comment.id, parent=comments_index[comment.parent_id])
@@ -191,8 +192,14 @@ def generate_html(submission, submission_id, now_str, sort, comments_index, comm
     # Header of file, with submission info
     html_submission = f"""<h1><a href="{config['reddit']['root']}/r/{submission.subreddit.display_name}/">/r/{submission.subreddit.display_name}</a> – <a href="{config['reddit']['root']}{submission.permalink}">{submission.title}</a></h1><h2>Snapshot taken on {now_str}<br/>Posts: {submission.num_comments} – Score: {submission.score} ({int(submission.upvote_ratio*100)}% upvoted) – Flair: {'None' if submission.link_flair_text is None else submission.link_flair_text} – Sorted by: {sort}<br/>Sticky: {'No' if submission.stickied is False else 'Yes'} – Spoiler: {'No' if submission.spoiler is False else 'Yes'} – NSFW: {'No' if submission.over_18 is False else 'Yes'} – OC: {'No' if submission.is_original_content is False else 'Yes'} – Locked: {'No' if submission.locked is False else 'Yes'}</h2><p><em>Snapshot taken from {__NAME__} v{__VERSION__}. All times are UTC.</em></p>"""
 
+    # External submission url
+    ext_url_path = urlparse(submission.url).path
+    ext_submission_url = ''
+    if ext_url_path != submission.permalink:
+        ext_submission_url = f'<a href="{submission.url}" target="_blank">{submission.url}</a>'
+
     # First comment (which is actually OP's post)
-    html_firstpost = f"""<h3>Original post</h3><div class="b p f l1" id="t3_{submission_id}"><header><a href="{config['reddit']['root']}/u/{'(deleted)' if submission.author is None else submission.author.name}">{'(deleted)' if submission.author is None else submission.author.name}</a>, on {datetime.datetime.fromtimestamp(submission.created_utc).strftime(config["defaults"]["dateformat"])}</header>{comment_parser(submission.selftext)}</div><h3>Comments</h3>"""
+    html_firstpost = f"""<h3>Original post</h3><div class="b p f l1" id="t3_{submission_id}"><header><a href="{config['reddit']['root']}/u/{'(deleted)' if submission.author is None else submission.author.name}">{'(deleted)' if submission.author is None else 'u/' + submission.author.name}</a>, on {datetime.datetime.fromtimestamp(submission.created_utc).strftime(config["defaults"]["dateformat"])}</header>{comment_parser(submission.selftext)}{ext_submission_url}</div><h3>Comments</h3>"""
 
     # Iterating through the tree to put comments in right order
 
@@ -259,7 +266,7 @@ def generate_html(submission, submission_id, now_str, sort, comments_index, comm
 
         # Adding the comment to the list
         html_comments += f"""<header><a href="{config['reddit']['root']}/u/{comments_forest[current_comment_id]['a']}">{comments_forest[current_comment_id]['a']}</a>, on <a href="{config['reddit']['root']}{comments_forest[current_comment_id]['l']}">{time_comment_str}</a> ({comments_forest[current_comment_id]['s']}{'' if comments_forest[current_comment_id]['e'] is False else ', edited'}) <a href="#{parent}" class="n P">▣</a> <a href="#{previous_sibling}" class="n A{previous_sibling_d}">🠉</a> <a href="#{next_sibling}" class="n B{next_sibling_d}">🠋</a> <a href="#{current_comment_id}" class="n S">◯</a></header>{comment_parser(comments_forest[current_comment_id]['b'])}"""
-        
+
         previous_comment_level = current_comment_level
         comment_counter += 1
 
@@ -344,7 +351,7 @@ try:
                 raise SystemExit(1)
             else:
                 submission_id_list.append(submission_id)
-    
+
     if args.file:
         for filename in args.file:
             with open(filename, "r") as f:
@@ -407,7 +414,7 @@ try:
     else:
         myprint(f'[i] {len(submission_id_list)} submissions to download', 14)
 
-    for submission_id in submission_id_list: 
+    for submission_id in submission_id_list:
         try:
             # "Connecting" to submission and getting information
             submission, nb_replies = get_submission(reddit, submission_id)
